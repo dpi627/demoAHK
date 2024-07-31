@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode,autohotkey,svn
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode,autohotkey,svn
 
+*.log
+[Ll]og/
+
 ### Autohotkey ###
 # Windows image file caches
 Thumbs.db
