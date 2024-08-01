@@ -63,6 +63,7 @@ Return
 
 - 開啟路徑 `\\twfs007\SGSSHARE\OAD\Brian\_Publish\ahk\`
 - 點選其中 `install.FormuLLaMa.bat`
+- 安裝同時也會寫入啟動路徑，重新開機會自動啟動服務
 - 如過安裝啟動過程正常，您應該會看到以下畫面
 
 ![](asset/formula-install.png)
