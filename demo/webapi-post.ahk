@@ -5,7 +5,7 @@ SetWorkingDir, %A_ScriptDir%
 #Include lib.log.ahk
 #Include lib.config.ahk
 
-!z::  ; Alt+F 觸發腳本
+!z::  ; Alt+Z 觸發腳本
 InputBox, userInput, 嗨 %A_UserName%，我是公式小幫手 FormuLLaMa🦙，請描述您的需求, , , 550, 100  ; 寬度300，高度100
 if ErrorLevel  ; 如果用戶取消輸入
     return
