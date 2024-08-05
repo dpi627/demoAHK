@@ -33,4 +33,4 @@ REM 執行安裝的exe文件
 start "" "%TARGET_PATH%\%SCRIPT_NAME%.exe"
 
 REM 使用 VBScript 顯示安裝完成消息
-mshta "javascript:var sh=new ActiveXObject('WScript.Shell'); sh.Popup('程序已於背執行，請使用 Alt+Z 呼叫🦙', 10, '%SCRIPT_NAME%🦙 安裝完成', 64);close();"
+mshta "javascript:var sh=new ActiveXObject('WScript.Shell'); sh.Popup('程序已於背景執行，請使用 Alt+Z 呼叫🦙', 10, '%SCRIPT_NAME%🦙 安裝完成', 64);close();"
