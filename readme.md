@@ -62,13 +62,12 @@ Return
 ## 📱安裝程式
 
 - 開啟路徑 `\\twfs007\SGSSHARE\OAD\Brian\_Publish\ahk\`
-- 點選其中 `install.FormuLLaMa.bat`
-- 安裝同時也會寫入啟動路徑，重新開機會自動啟動服務
-- 如過安裝啟動過程正常，您應該會看到以下畫面
+- 可先檢視其中 `示範影片.mp4` 確認功能符合需求
+- 點選其中 `install.bat` 進行安裝，成功會顯示以下畫面
 
 ![](asset/formula-install.png)
 
->💡同理，反安裝請執行路徑下 `uninstall.FormuLLaMa.bat` 即可<br>
+>💡反安裝請執行路徑下 `uninstall.bat` 即可<br>
 🚨如擔心開放環境 `bat` 指令集遭竄改，也可下載本 repo 內檔案執行
 
 ## 🎮使用 FormuLLaMa
