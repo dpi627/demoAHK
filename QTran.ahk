@@ -17,64 +17,51 @@
         ; Call the translation API and get the result
         apiResult := CallTranslationAPI(selectedText)
         
-        ; Create a GUI with an editable text area
-        MyGui := Gui()
-        MyGui.Title := "Translation Result"
-        MyGui.Opt("+Resize +MinSize320x200")  ; Make the window resizable
+        ; Create a GUI with a simple layout like the error window
+        MyGui := Gui("+AlwaysOnTop -MinimizeBox")
+        MyGui.Title := "QTran.ahk"
+        MyGui.BackColor := "FFFFFF"  ; White background like the error window
+        MyGui.SetFont("s9", "Segoe UI")  ; Font similar to error window
         
-        ; Set default GUI font to Microsoft JhengHei
-        MyGui.SetFont("s10", "Microsoft JhengHei")
+        ; Add the original text with label
+        MyGui.Add("Text", "w600", "Original Text:")
+        MyGui.Add("Text", "xm y+5 w600 r3", selectedText)
         
-        ; Add original text label
-        MyGui.Add("Text", "w400", "Original Text:")
+        ; Add a horizontal line
+        MyGui.Add("Text", "xm y+10 w600 h1 0x10")  ; 0x10 creates a horizontal line
         
-        ; Add Edit control with the selected text (multi-line, can be copied, but read-only)
-        MyEditOriginal := MyGui.Add("Edit", "r3 w400 vSelectedText ReadOnly", selectedText)
+        ; Add the translation result with label
+        MyGui.Add("Text", "xm y+10 w600", "Translation Result:")
+        TranslationText := MyGui.Add("Text", "xm y+5 w600 r7", "Loading translation...")
         
-        ; Add translation result label
-        MyGui.Add("Text", "w400", "Translation Result:")
-        
-        ; Add Edit control with the translation result - initially empty
-        MyEditResult := MyGui.Add("Edit", "r7 w400 vTranslationResult ReadOnly", "Loading translation...")
-        
-        ; Add progress indicator
-        MyProgress := MyGui.Add("Progress", "w400 h20 vProgressBar Range0-100", 0)
+        ; Add progress indicator at the bottom
+        MyProgress := MyGui.Add("Progress", "xm y+10 w600 h20 vProgressBar Range0-100", 0)
         MyProgress.Opt("Hidden")
         
-        ; Add a dummy control that can take focus (but won't be visible)
-        DummyButton := MyGui.Add("Button", "x-100 y-100 w1 h1", "")
-        
-        ; Make the edit controls resize with the window
-        MyGui.OnEvent("Size", GuiResize)
+        ; Add bottom buttons like the error dialog
+        MyGui.Add("Button", "x" (600-320) " y+15 w80", "Help").OnEvent("Click", (*) => ShowHelp())
+        MyGui.Add("Button", "x+5 w80", "Copy").OnEvent("Click", (*) => CopyText(selectedText, apiResult))
+        MyGui.Add("Button", "x+5 w80", "Close").OnEvent("Click", (*) => MyGui.Destroy())
         
         ; Show the GUI
         MyGui.Show()
-        
-        ; Deselect all text and remove focus
-        MyEditOriginal.Focus()
-        SendMessage(0xB1, -1, 0, MyEditOriginal)
         
         ; Display translation progressively if it's long
         if (StrLen(apiResult) > 500)
         {
             MyProgress.Opt("-Hidden")
-            DisplayProgressiveText(MyGui, MyEditResult, apiResult, MyProgress)
+            DisplayProgressiveTextLabel(MyGui, TranslationText, apiResult, MyProgress)
         }
         else
         {
             ; For short translations, just display immediately
-            MyEditResult.Value := apiResult
-            MyEditResult.Focus()
-            SendMessage(0xB1, -1, 0, MyEditResult)
+            TranslationText.Value := apiResult
         }
-        
-        ; Remove focus from all controls
-        DummyButton.Focus()
     }
 }
 
-; Function to progressively display text
-DisplayProgressiveText(gui, control, fullText, progressBar)
+; Function to progressively display text in a Text control
+DisplayProgressiveTextLabel(gui, control, fullText, progressBar)
 {
     textLength := StrLen(fullText)
     chunkSize := Max(20, Floor(textLength / 10))  ; Display in around 10 chunks
@@ -94,16 +81,32 @@ DisplayProgressiveText(gui, control, fullText, progressBar)
             currentPos := textLength
             SetTimer , 0  ; Stop the timer
             progressBar.Opt("Hidden")
+            currentPos := 0  ; Reset for next time
         }
         
         ; Extract the chunk and update the control
         displayedText := SubStr(fullText, 1, currentPos)
-        control.Value := displayedText
+        control.Text := displayedText
         
         ; Update progress bar
         progressPercent := Min(100, Round((currentPos / textLength) * 100))
         progressBar.Value := progressPercent
     }
+}
+
+; Function to handle copy button
+CopyText(originalText, translatedText)
+{
+    A_Clipboard := "Original Text:`r`n" originalText "`r`n`r`nTranslation:`r`n" translatedText
+}
+
+; Function to show help
+ShowHelp()
+{
+    MsgBox("QTran Help`n`nThis tool translates selected text.`n`n" 
+         . "1. Select text in any application`n"
+         . "2. Press Alt+Q`n"
+         . "3. View the translation result", "Help")
 }
 
 ; Function to call the translation API
@@ -153,21 +156,4 @@ UrlEncode(str)
             result .= "%" . Format("{:02X}", c)
     }
     return result
-}
-
-; Function to handle window resizing
-GuiResize(thisGui, minMax, width, height)
-{
-    if (minMax = -1)  ; The window has been minimized
-        return
-    
-    ; Calculate heights for controls based on window height
-    totalHeight := height - 20  ; Total usable height
-    originalHeight := Floor(totalHeight * 0.3)  ; 30% for original text
-    resultHeight := totalHeight - originalHeight - 50  ; Remaining space minus labels and progress bar
-    
-    ; Resize and reposition the controls
-    thisGui["SelectedText"].Move(5, 20, width - 10, originalHeight)
-    thisGui["TranslationResult"].Move(5, originalHeight + 40, width - 10, resultHeight)
-    thisGui["ProgressBar"].Move(5, height - 30, width - 10, 20)
 }
