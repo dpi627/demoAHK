@@ -34,8 +34,12 @@
         ; Add translation result label
         MyGui.Add("Text", "w400", "Translation Result:")
         
-        ; Add Edit control with the translation result
-        MyEditResult := MyGui.Add("Edit", "r7 w400 vTranslationResult ReadOnly", apiResult)
+        ; Add Edit control with the translation result - initially empty
+        MyEditResult := MyGui.Add("Edit", "r7 w400 vTranslationResult ReadOnly", "Loading translation...")
+        
+        ; Add progress indicator
+        MyProgress := MyGui.Add("Progress", "w400 h20 vProgressBar Range0-100", 0)
+        MyProgress.Opt("Hidden")
         
         ; Add a dummy control that can take focus (but won't be visible)
         DummyButton := MyGui.Add("Button", "x-100 y-100 w1 h1", "")
@@ -49,9 +53,56 @@
         ; Deselect all text and remove focus
         MyEditOriginal.Focus()
         SendMessage(0xB1, -1, 0, MyEditOriginal)
-        MyEditResult.Focus()
-        SendMessage(0xB1, -1, 0, MyEditResult)
+        
+        ; Display translation progressively if it's long
+        if (StrLen(apiResult) > 500)
+        {
+            MyProgress.Opt("-Hidden")
+            DisplayProgressiveText(MyGui, MyEditResult, apiResult, MyProgress)
+        }
+        else
+        {
+            ; For short translations, just display immediately
+            MyEditResult.Value := apiResult
+            MyEditResult.Focus()
+            SendMessage(0xB1, -1, 0, MyEditResult)
+        }
+        
+        ; Remove focus from all controls
         DummyButton.Focus()
+    }
+}
+
+; Function to progressively display text
+DisplayProgressiveText(gui, control, fullText, progressBar)
+{
+    textLength := StrLen(fullText)
+    chunkSize := Max(20, Floor(textLength / 10))  ; Display in around 10 chunks
+    
+    ; Start a timer to update the text progressively
+    SetTimer UpdateTextDisplay, 150
+    
+    ; Inner function to update the display incrementally
+    UpdateTextDisplay()
+    {
+        static currentPos := 0
+        
+        ; Calculate new position
+        currentPos += chunkSize
+        if (currentPos >= textLength)
+        {
+            currentPos := textLength
+            SetTimer , 0  ; Stop the timer
+            progressBar.Opt("Hidden")
+        }
+        
+        ; Extract the chunk and update the control
+        displayedText := SubStr(fullText, 1, currentPos)
+        control.Value := displayedText
+        
+        ; Update progress bar
+        progressPercent := Min(100, Round((currentPos / textLength) * 100))
+        progressBar.Value := progressPercent
     }
 }
 
@@ -113,9 +164,10 @@ GuiResize(thisGui, minMax, width, height)
     ; Calculate heights for controls based on window height
     totalHeight := height - 20  ; Total usable height
     originalHeight := Floor(totalHeight * 0.3)  ; 30% for original text
-    resultHeight := totalHeight - originalHeight - 30  ; Remaining space minus labels
+    resultHeight := totalHeight - originalHeight - 50  ; Remaining space minus labels and progress bar
     
     ; Resize and reposition the controls
     thisGui["SelectedText"].Move(5, 20, width - 10, originalHeight)
     thisGui["TranslationResult"].Move(5, originalHeight + 40, width - 10, resultHeight)
+    thisGui["ProgressBar"].Move(5, height - 30, width - 10, 20)
 }
